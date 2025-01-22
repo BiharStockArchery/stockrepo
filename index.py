@@ -4,104 +4,52 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import pytz
 from datetime import datetime, timedelta
+import time
 
 app = Flask(__name__)
 
 # List of sector-wise stock symbols from NSE
 symbols = [
-    "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS","ACC.NS",
-    "APLAPOLLO.NS", "AUBANK.NS", "AARTIIND.NS", "ABBOTINDIA.NS", 
-    "ADANIENSOL.NS", "ADANIENT.NS", "ADANIGREEN.NS", "ADANIPORTS.NS", 
-    "ATGL.NS", "ABCAPITAL.NS", "ABFRL.NS", "ALKEM.NS", "AMBUJACEM.NS",
-    "ANGELONE.NS", "APOLLOHOSP.NS", "APOLLOTYRE.NS", "ASHOKLEY.NS",
-    "ASIANPAINT.NS", "ASTRAL.NS", "ATUL.NS", "AUROPHARMA.NS", "DMART.NS",
-    "AXISBANK.NS", "BSOFT.NS", "BSE.NS", "BAJAJ-AUTO.NS", "BAJFINANCE.NS",
-    "BAJAJFINSV.NS", "BALKRISIND.NS", "BANDHANBNK.NS", "BANKBARODA.NS",
-    "BANKINDIA.NS", "BATAINDIA.NS", "BERGEPAINT.NS", "BEL.NS", "BHARATFORG.NS",
-    "BHEL.NS", "BPCL.NS", "BHARTIARTL.NS", "BIOCON.NS", "BOSCHLTD.NS",
-    "BRITANNIA.NS", "CESC.NS", "CGPOWER.NS", "CANFINHOME.NS", "CANBK.NS",
-    "CDSL.NS", "CHAMBLFERT.NS", "CHOLAFIN.NS", "CIPLA.NS", "CUB.NS", "COALINDIA.NS",
-    "COFORGE.NS", "COLPAL.NS", "CAMS.NS", "CONCOR.NS", "COROMANDEL.NS", "CROMPTON.NS",
-    "CUMMINSIND.NS", "CYIENT.NS", "DLF.NS", "DABUR.NS", "DALBHARAT.NS", "DEEPAKNTR.NS",
-    "DELHIVERY.NS", "DIVISLAB.NS", "DIXON.NS", "LALPATHLAB.NS", "DRREDDY.NS", "EICHERMOT.NS",
-    "ESCORTS.NS", "EXIDEIND.NS", "NYKAA.NS", "GAIL.NS", "GMRAIRPORT.NS", "GLENMARK.NS",
-    "GODREJCP.NS", "GODREJPROP.NS", "GRANULES.NS", "GRASIM.NS", "GUJGASLTD.NS", "GNFC.NS",
-    "HCLTECH.NS", "HDFCAMC.NS", "HDFCBANK.NS", "HDFCLIFE.NS", "HFCL.NS", "HAVELLS.NS",
-    "HEROMOTOCO.NS", "HINDALCO.NS", "HAL.NS", "HINDCOPPER.NS", "HINDPETRO.NS", "HINDUNILVR.NS",
-    "HUDCO.NS", "ICICIBANK.NS", "ICICIGI.NS", "ICICIPRULI.NS", "IDFCFIRSTB.NS", "IPCALAB.NS",
-    "IRB.NS", "ITC.NS", "INDIAMART.NS", "INDIANB.NS", "IEX.NS", "IOC.NS", "IRCTC.NS", 
-    "IRFC.NS", "IGL.NS", "INDUSTOWER.NS", "INDUSINDBK.NS", "NAUKRI.NS", "INFY.NS", "INDIGO.NS",
-    "JKCEMENT.NS", "JSWENERGY.NS", "JSWSTEEL.NS", "JSL.NS", "JINDALSTEL.NS", "JIOFIN.NS",
-    "JUBLFOOD.NS", "KEI.NS", "KPITTECH.NS", "KALYANKJIL.NS", "KOTAKBANK.NS", "LTF.NS",
-    "LTTS.NS", "LICHSGFIN.NS", "LTIM.NS", "LT.NS", "LAURUSLABS.NS", "LICI.NS", "LUPIN.NS",
-    "MRF.NS", "LODHA.NS", "MGL.NS", "M&MFIN.NS", "M&M.NS", "MANAPPURAM.NS", "MARICO.NS",
-    "MARUTI.NS", "MFSL.NS", "MAXHEALTH.NS", "METROPOLIS.NS", "MPHASIS.NS", "MCX.NS",
-    "MUTHOOTFIN.NS", "NCC.NS", "NHPC.NS", "NMDC.NS", "NTPC.NS", "NATIONALUM.NS", "NAVINFLUOR.NS",
-    "NESTLEIND.NS", "OBEROIRLTY.NS", "ONGC.NS", "OIL.NS", "PAYTM.NS", "OFSS.NS", "POLICYBZR.NS",
-    "PIIND.NS", "PVRINOX.NS", "PAGEIND.NS", "PERSISTENT.NS", "PETRONET.NS", "PIDILITIND.NS",
-    "PEL.NS", "POLYCAB.NS", "POONAWALLA.NS", "PFC.NS", "POWERGRID.NS", "PRESTIGE.NS", "PNB.NS",
-    "RBLBANK.NS", "RECLTD.NS", "RELIANCE.NS", "SBICARD.NS", "SBILIFE.NS", "SHREECEM.NS",
-    "SJVN.NS", "SRF.NS", "MOTHERSON.NS", "SHRIRAMFIN.NS", "SIEMENS.NS", "SONACOMS.NS", 
-    "SBIN.NS", "SAIL.NS", "SUNPHARMA.NS", "SUNTV.NS", "SUPREMEIND.NS", "SYNGENE.NS", 
-    "TATACONSUM.NS", "TVSMOTOR.NS", "TATACHEM.NS", "TATACOMM.NS", "TCS.NS", "TATAELXSI.NS",
-    "TATAMOTORS.NS", "TATAPOWER.NS", "TATASTEEL.NS", "TECHM.NS", "FEDERALBNK.NS", "INDHOTEL.NS",
-    "RAMCOCEM.NS", "TITAN.NS", "TORNTPHARM.NS", "TRENTS.NS", "TIINDIA.NS", "UPL.NS", "ULTRACEMCO.NS",
-    "UNIONBANK.NS", "UBL.NS", "UNITDSPR.NS", "VBL.NS", "VEDL.NS", "IDEA.NS", "VOLTAS.NS", "WIPRO.NS",
-    "YESBANK.NS", "ZOMATO.NS"
+    "RELIANCE.NS", "TCS.NS", "HDFCBANK.NS", "ACC.NS", "APLAPOLLO.NS", "AUBANK.NS", "AARTIIND.NS", 
+    # Add more symbols here...
 ]
 
 # Define the timezone (Indian Standard Time)
 IST = pytz.timezone('Asia/Kolkata')
 
 def get_sector_data():
-    try:
-        # Get the current date and time
-        now = datetime.now(IST)
+    result_data = {}
 
-        # Fetch 5 days of minute-level data to get the high, low, and previous day's close prices
-        data = yf.download(symbols, period="5d", interval="1d")  # 5-day data to get high, low, and close
-        
-        # Debugging: Print fetched data
-        print("Fetched data:\n", data)
+    for symbol in symbols:
+        try:
+            print(f"Fetching data for {symbol}...")
+            # Fetch data from Yahoo Finance
+            data = yf.download(symbol, period="5d", interval="1d")
 
-        # Check if the data contains 'Adj Close' or 'Close' for accurate price info
-        stock_data = data.get('Adj Close', data.get('Close'))
+            # Check if data is returned
+            if data.empty:
+                raise ValueError(f"No data returned for {symbol}")
 
-        if stock_data is None or stock_data.empty:
-            print("Error: No valid stock data for symbols.")
-            return {"error": "No valid stock data available."}
+            # Get the previous day's closing price (second to last row)
+            previous_day_close = data['Adj Close'].iloc[-2]  
+            current_price = data['Adj Close'].iloc[-1]  # Today's most recent price (last row)
 
-        # Prepare the result data dictionary
-        result_data = {}
+            # Calculate the percentage change from the previous day's close price
+            percentage_change = ((current_price - previous_day_close) / previous_day_close) * 100
 
-        # Loop through the stock symbols and calculate data for each
-        for symbol in symbols:
-            try:
-                # Get the previous day's closing price (last row in 'Adj Close' or 'Close' column)
-                previous_day_close = stock_data[symbol].iloc[-2]  # Previous day's closing price
-                
-                # Get the current day's last close price (for comparison)
-                current_price = stock_data[symbol].iloc[-1]  # Today's most recent price (last row)
+            # Add the stock data to the result
+            result_data[symbol] = {
+                "current_price": current_price,
+                "percentage_change": percentage_change
+            }
 
-                # Calculate the percentage change from the previous day's close price
-                percentage_change = ((current_price - previous_day_close) / previous_day_close) * 100
+        except ValueError as e:
+            print(f"Error processing symbol {symbol}: {str(e)}")
+        except Exception as e:
+            print(f"Unexpected error processing symbol {symbol}: {str(e)}")
+            time.sleep(2)  # Adding a small delay before retrying
 
-                # Add the stock data to the result
-                result_data[symbol] = {
-                    "current_price": current_price,
-                    "percentage_change": percentage_change
-                }
-
-            except Exception as e:
-                # If an error occurs for the symbol, log the error and skip the symbol
-                print(f"Error processing symbol {symbol}: {e}")
-                continue  # Skip this symbol and move on to the next one
-
-        return result_data
-
-    except Exception as e:
-        print("Error:", e)
-        return {"error": str(e)}
+    return result_data
 
 # Define the background task function
 def update_sector_data():
@@ -113,8 +61,8 @@ def update_sector_data():
 def sector_heatmap():
     sector_data = get_sector_data()
 
-    if "error" in sector_data:
-        return jsonify({"status": "error", "message": sector_data["error"]}), 400
+    if not sector_data:
+        return jsonify({"status": "error", "message": "No valid stock data available."}), 400
 
     return jsonify({"status": "success", "data": sector_data})
 

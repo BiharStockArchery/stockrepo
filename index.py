@@ -1,43 +1,29 @@
 import yfinance as yf
+import pandas as pd
 from flask import Flask, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 import os
 import pytz
-import pandas as pd
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
-# Read stock symbols from a CSV file
-def load_symbols_from_csv(csv_path):
-    try:
-        # Load the CSV file containing stock symbols
-        df = pd.read_csv(csv_path)
-        # Assuming the CSV has a column named 'Symbol'
-        symbols = df['Symbol'].apply(lambda x: f"{x}.NS").tolist()  # Append .NS to each symbol
-        return symbols
-    except Exception as e:
-        print(f"Error loading CSV: {e}")
-        return []
-
-# Path to your CSV file
-csv_path = "C:/Users/Anupam/Desktop/New folder (3)/stocks.csv"  # Replace with your actual CSV file path
-
-# Load symbols from CSV and append ".NS"
-symbols = load_symbols_from_csv(csv_path)
+# List of stock symbols (modify as per your requirement)
+symbols = ["RELIANCE.NS", "TCS.NS", "HDFCBANK.NS"]  # Example symbols
 
 # Define the timezone (Indian Standard Time)
 IST = pytz.timezone('Asia/Kolkata')
 
+# Function to fetch stock data
 def get_sector_data():
     try:
         # Get the current date and time
         now = datetime.now(IST)
 
-        # Fetch 5 days of minute-level data to get the high, low, and previous day's close prices
-        data = yf.download(symbols, period="5d", interval="1d")  # 5-day data to get high, low, and close
-        
-        # Debugging: Print fetched data
+        # Fetch 5 days of data to get high, low, and previous day's close prices
+        data = yf.download(symbols, period="5d", interval="1d")
+
+        # Debugging: Print fetched data to verify
         print("Fetched data:\n", data)
 
         # Check if the data contains 'Adj Close' or 'Close' for accurate price info
@@ -54,7 +40,7 @@ def get_sector_data():
         for symbol in symbols:
             # Get the previous day's closing price (last row in 'Adj Close' or 'Close' column)
             previous_day_close = stock_data[symbol].iloc[-2]  # Previous day's closing price
-            
+
             # Get the current day's last close price (for comparison)
             current_price = stock_data[symbol].iloc[-1]  # Today's most recent price (last row)
 
@@ -63,9 +49,14 @@ def get_sector_data():
 
             # Add the stock data to the result
             result_data[symbol] = {
+                "name": symbol,
                 "current_price": current_price,
                 "percentage_change": percentage_change
             }
+
+        # Check if the result data is non-empty before proceeding with any action
+        if not result_data:
+            return {"error": "No valid stock data to display."}
 
         return result_data
 
